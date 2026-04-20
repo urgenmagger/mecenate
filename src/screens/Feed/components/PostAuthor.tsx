@@ -1,38 +1,36 @@
-import React from 'react';
+import { FC, memo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Avatar } from '../../../common/components/Avatar';
-import { colors } from '../../../common/constants/colors';
+import { authorRowTokens } from '../../../common/theme';
 import { Author } from '../../../api/types/api';
 
 interface PostAuthorProps {
   author: Author;
+  showUsername?: boolean;
 }
 
-export const PostAuthor: React.FC<PostAuthorProps> = ({ author }) => {
+const t = authorRowTokens;
+
+const PostAuthorComponent: FC<PostAuthorProps> = ({ author, showUsername = true }) => {
   return (
     <View style={styles.container}>
-      <Avatar uri={author.avatarUrl} size={36} />
+      <Avatar uri={author.avatarUrl} size={t.avatarSize} />
       <View>
         <Text style={styles.name}>{author.displayName}</Text>
-        <Text style={styles.username}>@{author.username}</Text>
+        {showUsername && <Text style={styles.username}>@{author.username}</Text>}
       </View>
     </View>
   );
 };
 
+export const PostAuthor = memo(PostAuthorComponent);
+
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: t.gap,
   },
-  name: {
-    color: colors.textPrimary,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  username: {
-    color: colors.textSecondary,
-    fontSize: 12,
-  },
+  name: t.name,
+  username: t.username,
 });

@@ -1,84 +1,65 @@
-import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { colors } from '../../../common/constants/colors';
+import { FC, memo } from 'react';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { Post } from '../../../api/types/api';
 import { useToggleLike } from '../../../api/hooks/posts/useToggleLike';
+import { PostActionChip } from '../../../common/components/PostActionChip';
+import { ExpandableText } from '../../../common/components/ExpandableText';
+import { postCardTokens } from '../../../common/theme';
 import { PostAuthor } from './PostAuthor';
 import HeartIcon from '../../../assets/icons/heart.svg';
+import HeartFilledIcon from '../../../assets/icons/heart-filled.svg';
 import CommentIcon from '../../../assets/icons/comment.svg';
 
 interface FeedPostCardProps {
   post: Post;
 }
 
-export const FeedPostCard: React.FC<FeedPostCardProps> = ({ post }) => {
+const FeedPostCardComponent: FC<FeedPostCardProps> = ({ post }) => {
   const { toggleLike } = useToggleLike();
 
   return (
     <View style={styles.container}>
-      <PostAuthor author={post.author} />
+      <View style={styles.inner}>
+        <PostAuthor author={post.author} showUsername={false} />
+      </View>
       {!!post.coverUrl && (
         <Image source={{ uri: post.coverUrl }} style={styles.cover} />
       )}
-      {!!post.title && <Text style={styles.title}>{post.title}</Text>}
+      {!!post.title && <Text style={[styles.title, styles.inner]}>{post.title}</Text>}
       {!!(post.body || post.preview) && (
-        <Text style={styles.body} numberOfLines={3}>
-          {post.body || post.preview}
-        </Text>
-      )}
-      <View style={styles.actions}>
-        <TouchableOpacity style={styles.action} onPress={() => toggleLike(post.id)}>
-          <HeartIcon
-            width={18}
-            height={18}
-            fill={post.isLiked ? colors.primary : 'none'}
-            stroke={post.isLiked ? colors.primary : colors.textSecondary}
-          />
-          <Text style={styles.actionCount}>{post.likesCount}</Text>
-        </TouchableOpacity>
-        <View style={styles.action}>
-          <CommentIcon width={18} height={18} stroke={colors.textSecondary} />
-          <Text style={styles.actionCount}>{post.commentsCount}</Text>
+        <View style={styles.inner}>
+          <ExpandableText text={post.body || post.preview} />
         </View>
+      )}
+      <View style={[styles.actions, styles.inner]}>
+        <PostActionChip
+          icon={(color) =>
+            post.isLiked ? (
+              <HeartFilledIcon width={18} height={15} />
+            ) : (
+              <HeartIcon width={18} height={18} />
+            )
+          }
+          count={post.likesCount}
+          isActive={post.isLiked}
+          variant="like"
+          onPress={() => toggleLike(post.id)}
+        />
+        <PostActionChip
+          icon={(color) => <CommentIcon width={15} height={15} />}
+          count={post.commentsCount}
+        />
       </View>
     </View>
   );
 };
 
+export const FeedPostCard = memo(FeedPostCardComponent);
+
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 12,
-    gap: 8,
-  },
-  cover: {
-    width: '100%',
-    height: 200,
-    borderRadius: 8,
-  },
-  title: {
-    color: colors.textPrimary,
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  body: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: 16,
-    paddingTop: 4,
-  },
-  action: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  actionCount: {
-    color: colors.textSecondary,
-    fontSize: 13,
-  },
+  container: postCardTokens.container,
+  inner: postCardTokens.inner,
+  cover: postCardTokens.cover,
+  title: postCardTokens.title,
+  actions: postCardTokens.actions,
 });

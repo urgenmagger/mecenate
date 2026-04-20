@@ -1,11 +1,8 @@
-import {
-  useInfiniteQuery,
-  UseInfiniteQueryResult,
-} from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
-import { postsService } from '../../services/posts.service';
-import { Post } from '../../types/api';
-import { QueryKeys } from '../../queryKeys';
+import { postsService } from "../../services/posts.service";
+import { Post } from "../../types/api";
+import { QueryKeys } from "../../queryKeys";
 
 type PostsPage = {
   posts: Post[];
@@ -21,48 +18,53 @@ interface Params {
 interface ReturnHook {
   data: Post[] | undefined;
   isLoading: boolean;
+  isRefetching: boolean;
   error: unknown;
   fetchNextPage: () => void;
   isFetchingNextPage: boolean;
   hasNextPage: boolean;
+  refetch: () => void;
 }
 
 export const useGetPosts = (params?: Params): ReturnHook => {
+  const limit = params?.limit ?? 3;
+
   const {
     data,
     isLoading,
+    isRefetching,
     error,
     fetchNextPage,
     isFetchingNextPage,
     hasNextPage,
-  }: UseInfiniteQueryResult<PostsPage, unknown> = useInfiniteQuery({
-    queryKey: [QueryKeys.Posts, params],
+    refetch,
+  } = useInfiniteQuery<PostsPage, unknown>({
+    queryKey: [QueryKeys.Posts, params?.tier, limit],
     initialPageParam: undefined as string | undefined,
     queryFn: async ({ pageParam }) => {
       const response = await postsService.getFeed({
-        limit: params?.limit ?? 10,
+        limit,
         tier: params?.tier,
-        cursor: pageParam,
+        cursor: pageParam as string | undefined,
       });
       return response.data.data;
     },
     getNextPageParam: lastPage =>
       lastPage.hasMore ? lastPage.nextCursor ?? undefined : undefined,
-    select: _data => ({
-      pages: _data.pages,
-      pageParams: _data.pageParams,
-    }),
     staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 
-  const posts = data?.pages.flatMap(page => page.posts);
+  const posts = data?.pages.flatMap((page: PostsPage) => page.posts);
 
   return {
     data: posts,
     isLoading,
+    isRefetching,
     error,
     fetchNextPage,
     isFetchingNextPage,
-    hasNextPage,
+    hasNextPage: Boolean(hasNextPage),
+    refetch,
   };
 };

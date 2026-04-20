@@ -1,6 +1,6 @@
-import React from 'react';
+import { FC } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { colors } from '../constants/colors';
+import { topTabsTokens } from '../theme/components/topTabs';
 
 interface Tab {
   key: string;
@@ -13,45 +13,65 @@ interface SegmentedTabsProps {
   onPress: (key: string) => void;
 }
 
-export const SegmentedTabs: React.FC<SegmentedTabsProps> = ({ tabs, activeKey, onPress }) => {
+const t = topTabsTokens;
+
+export const SegmentedTabs: FC<SegmentedTabsProps> = ({ tabs, activeKey, onPress }) => {
   return (
     <View style={styles.container}>
-      {tabs.map((tab) => (
-        <TouchableOpacity
-          key={tab.key}
-          style={[styles.tab, activeKey === tab.key && styles.tabActive]}
-          onPress={() => onPress(tab.key)}
-        >
-          <Text style={[styles.label, activeKey === tab.key && styles.labelActive]}>
-            {tab.label}
-          </Text>
-        </TouchableOpacity>
-      ))}
+      {tabs.map((tab) => {
+        const isActive = activeKey === tab.key;
+        return (
+          <TouchableOpacity
+            key={tab.key}
+            style={[styles.tab, isActive && styles.tabActive]}
+            onPress={() => onPress(tab.key)}
+            activeOpacity={0.8}
+          >
+            <Text
+              style={[styles.label, isActive ? styles.labelActive : styles.labelInactive]}
+              numberOfLines={1}
+            >
+              {tab.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    height: t.container.height,
     flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderRadius: 20,
-    padding: 4,
+    alignItems: 'stretch',
+    backgroundColor: t.container.backgroundColor,
+    borderWidth: t.container.borderWidth,
+    borderColor: t.container.borderColor,
+    borderRadius: t.container.borderRadius,
+    paddingHorizontal: t.container.paddingHorizontal,
+    paddingVertical: t.container.paddingVertical,
   },
   tab: {
     flex: 1,
-    paddingVertical: 6,
     alignItems: 'center',
-    borderRadius: 16,
+    justifyContent: 'center',
+    borderRadius: t.tab.active.borderRadius,
+    paddingHorizontal: t.tab.paddingHorizontal,
   },
   tabActive: {
-    backgroundColor: colors.primary,
+    backgroundColor: t.tab.active.backgroundColor,
   },
   label: {
-    fontSize: 13,
-    color: colors.textSecondary,
+    fontFamily: t.tab.label.fontFamily,
+    fontSize: t.tab.label.fontSize,
+    lineHeight: t.tab.label.lineHeight,
+    textAlign: 'center',
   },
   labelActive: {
-    color: colors.textPrimary,
+    color: t.tab.active.labelColor,
+  },
+  labelInactive: {
+    color: t.tab.inactive.labelColor,
   },
 });

@@ -1,18 +1,27 @@
-import React, { useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { SegmentedTabs } from '../../common/components/SegmentedTabs';
-import { SkeletonBlock } from '../../common/components/SkeletonBlock';
-import { colors } from '../../common/constants/colors';
-import { Post } from '../../api/types/api';
-import { useGetPosts } from '../../api/hooks/posts/useGetPosts';
-import { FeedPostCard } from './components/FeedPostCard';
-import { PaidPostCard } from './components/PaidPostCard';
+import { useCallback, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  ListRenderItem,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { SegmentedTabs } from "../../common/components/SegmentedTabs";
+import { SkeletonBlock } from "../../common/components/SkeletonBlock";
+import { colors, spacing, radii } from "../../common/theme";
+import { Post } from "../../api/types/api";
+import { useGetPosts } from "../../api/hooks/posts/useGetPosts";
+import { FeedPostCard } from "./components/FeedPostCard";
+import { PaidPostCard } from "./components/PaidPostCard";
 
 const TABS = [
-  { key: 'all', label: 'Все' },
-  { key: 'free', label: 'Бесплатные' },
-  { key: 'paid', label: 'Платные' },
+  { key: "all", label: "Все" },
+  { key: "free", label: "Бесплатные" },
+  { key: "paid", label: "Платные" },
 ];
 
 const PostSkeleton = () => (
@@ -30,31 +39,81 @@ const PostSkeleton = () => (
   </View>
 );
 
-export const FeedScreen: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('all');
+export const FeedScreen = () => {
+  const [activeTab, setActiveTab] = useState("all");
 
-  const tier = activeTab === 'all' ? undefined : (activeTab as 'free' | 'paid');
+  const tier = activeTab === "all" ? undefined : (activeTab as "free" | "paid");
 
-  const { data: posts, isLoading, fetchNextPage, isFetchingNextPage, hasNextPage } =
-    useGetPosts({ tier });
+  const {
+    data: posts,
+    isLoading,
+    isRefetching,
+    error,
+    fetchNextPage,
+    isFetchingNextPage,
+    hasNextPage,
+    refetch,
+  } = useGetPosts({ tier, limit: 3 });
 
-  const renderPost = ({ item }: { item: Post }) => {
-    if (item.tier === 'paid') {
-      return <PaidPostCard post={item} onDonate={(id) => console.log('donate', id)} />;
-    }
-    return <FeedPostCard post={item} />;
+  const handleEndReached = () => {
+    if (!hasNextPage || isFetchingNextPage) return;
+    fetchNextPage();
   };
+
+  const handleDonate = useCallback(() => {}, []);
+
+  const renderPost = useCallback<ListRenderItem<Post>>(
+    ({ item }) => {
+      if (item.tier === "paid") {
+        return <PaidPostCard post={item} onDonate={handleDonate} />;
+      }
+      return <FeedPostCard post={item} />;
+    },
+    [handleDonate],
+  );
 
   const renderFooter = () => {
     if (!isFetchingNextPage) return null;
-    return <ActivityIndicator color={colors.primary} style={styles.footer} />;
+    return (
+      <ActivityIndicator color={colors.brand.primary} style={styles.footer} />
+    );
   };
+
+  if (error && !posts?.length) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.container}>
+          <View style={styles.tabsWrapper}>
+            <SegmentedTabs
+              tabs={TABS}
+              activeKey={activeTab}
+              onPress={setActiveTab}
+            />
+          </View>
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>
+              Не удалось загрузить публикации
+            </Text>
+            <Pressable onPress={() => refetch()} style={styles.retryButton}>
+              <Text style={styles.retryLabel}>Повторить</Text>
+            </Pressable>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (isLoading) {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.container}>
-          <SegmentedTabs tabs={TABS} activeKey={activeTab} onPress={setActiveTab} />
+          <View style={styles.tabsWrapper}>
+            <SegmentedTabs
+              tabs={TABS}
+              activeKey={activeTab}
+              onPress={setActiveTab}
+            />
+          </View>
           <PostSkeleton />
           <PostSkeleton />
         </View>
@@ -65,16 +124,33 @@ export const FeedScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        <SegmentedTabs tabs={TABS} activeKey={activeTab} onPress={setActiveTab} />
+        <View style={styles.tabsWrapper}>
+          <SegmentedTabs
+            tabs={TABS}
+            activeKey={activeTab}
+            onPress={setActiveTab}
+          />
+        </View>
         <FlatList
           data={posts}
           keyExtractor={(item) => item.id}
           renderItem={renderPost}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
-          onEndReached={() => hasNextPage && fetchNextPage()}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={refetch}
+              tintColor={colors.brand.primary}
+            />
+          }
+          onEndReached={handleEndReached}
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}
+          initialNumToRender={3}
+          maxToRenderPerBatch={3}
+          windowSize={5}
+          removeClippedSubviews
         />
       </View>
     </SafeAreaView>
@@ -84,30 +160,55 @@ export const FeedScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.background.screen,
   },
   container: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    gap: 12,
+    paddingTop: spacing[12],
+    gap: spacing[12],
+  },
+  tabsWrapper: {
+    paddingHorizontal: spacing[12],
   },
   list: {
-    gap: 12,
-    paddingBottom: 24,
+    gap: spacing[12],
+    paddingBottom: spacing[24],
   },
   skeleton: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 12,
-    gap: 10,
+    backgroundColor: colors.background.surface,
+    borderRadius: radii.md,
+    padding: spacing[12],
+    gap: spacing[8],
   },
   skeletonHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing[8],
   },
   footer: {
-    paddingVertical: 16,
+    paddingVertical: spacing[16],
+  },
+  errorContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing[16],
+    paddingHorizontal: spacing[24],
+  },
+  errorText: {
+    fontSize: 15,
+    color: colors.text.onLight,
+    textAlign: "center",
+  },
+  retryButton: {
+    backgroundColor: colors.brand.primary,
+    paddingHorizontal: spacing[24],
+    paddingVertical: spacing[12],
+    borderRadius: radii.md,
+  },
+  retryLabel: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: colors.neutral.white,
   },
 });

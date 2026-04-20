@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { postsService } from '../../services/posts.service';
-import { Post, PostsResponse } from '../../types/api';
+import { Post } from '../../types/api';
 import { QueryKeys } from '../../queryKeys';
 
 interface ReturnHook {

@@ -1,7 +1,4 @@
-import {
-  useInfiniteQuery,
-  UseInfiniteQueryResult,
-} from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
 import { commentsService } from '../../services/comments.service';
 import { Comment } from '../../types/api';
@@ -30,13 +27,13 @@ export const useGetComments = (postId: string): ReturnHook => {
     fetchNextPage,
     isFetchingNextPage,
     hasNextPage,
-  }: UseInfiniteQueryResult<CommentsPage, unknown> = useInfiniteQuery({
+  } = useInfiniteQuery<CommentsPage, unknown>({
     queryKey: [QueryKeys.Comments, postId],
     initialPageParam: undefined as string | undefined,
     queryFn: async ({ pageParam }) => {
       const response = await commentsService.getByPostId(postId, {
         limit: 20,
-        cursor: pageParam,
+        cursor: pageParam as string | undefined,
       });
       return response.data.data;
     },
@@ -45,7 +42,7 @@ export const useGetComments = (postId: string): ReturnHook => {
     enabled: !!postId,
   });
 
-  const comments = data?.pages.flatMap(page => page.comments);
+  const comments = data?.pages.flatMap((page: CommentsPage) => page.comments);
 
   return {
     data: comments,
@@ -53,6 +50,6 @@ export const useGetComments = (postId: string): ReturnHook => {
     error,
     fetchNextPage,
     isFetchingNextPage,
-    hasNextPage,
+    hasNextPage: Boolean(hasNextPage),
   };
 };

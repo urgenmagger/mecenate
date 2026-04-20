@@ -1,9 +1,12 @@
-import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FC, memo } from 'react';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { colors } from '../../../common/constants/colors';
+import { colors, lockedContentOverlayTokens, postCardTokens, spacing, radii } from '../../../common/theme';
 import { Post } from '../../../api/types/api';
 import { PostAuthor } from './PostAuthor';
+import { DonateButton } from '../../../common/buttons/DonateButton';
+import { strings } from '../../../common/constants/strings';
+import { SkeletonBlock } from '../../../common/components/SkeletonBlock';
 import DonateIcon from '../../../assets/icons/donate.svg';
 
 interface PaidPostCardProps {
@@ -11,76 +14,69 @@ interface PaidPostCardProps {
   onDonate: (postId: string) => void;
 }
 
-export const PaidPostCard: React.FC<PaidPostCardProps> = ({ post, onDonate }) => {
+const PaidPostCardComponent: FC<PaidPostCardProps> = ({ post, onDonate }) => {
   return (
     <View style={styles.container}>
-      <PostAuthor author={post.author} />
-      {!!post.title && <Text style={styles.title}>{post.title}</Text>}
+      <View style={styles.inner}>
+        <PostAuthor author={post.author} showUsername={false} />
+      </View>
       <View style={styles.imageWrapper}>
         {!!post.coverUrl && (
           <Image source={{ uri: post.coverUrl }} style={styles.cover} blurRadius={8} />
         )}
         <BlurView intensity={40} tint="dark" style={styles.blur}>
-          <Text style={styles.hint}>{post.preview || 'Контент доступен после доната'}</Text>
-          <TouchableOpacity style={styles.button} onPress={() => onDonate(post.id)}>
-            <DonateIcon width={16} height={16} fill={colors.textPrimary} />
-            <Text style={styles.buttonText}>Отправить донат</Text>
-          </TouchableOpacity>
+          <View style={styles.iconBadge}>
+            <DonateIcon width={20} height={20} fill={colors.neutral.white} />
+          </View>
+          <Text style={styles.hint}>{strings.lockedContent.hint}</Text>
+          <DonateButton onPress={() => onDonate(post.id)} />
         </BlurView>
+      </View>
+      <View style={[styles.inner, styles.skeletons]}>
+        <SkeletonBlock style={[styles.skeleton, styles.skeletonShort]} />
+        <SkeletonBlock style={styles.skeleton} />
       </View>
     </View>
   );
 };
 
+export const PaidPostCard = memo(PaidPostCardComponent);
+
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 12,
-    gap: 8,
-  },
-  title: {
-    color: colors.textPrimary,
-    fontSize: 15,
-    fontWeight: '600',
+  container: postCardTokens.container,
+  inner: postCardTokens.inner,
+  iconBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: radii.sm,
+    backgroundColor: colors.brand.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   imageWrapper: {
-    borderRadius: 8,
     overflow: 'hidden',
-    minHeight: 160,
+    width: '100%',
+    aspectRatio: 1,
   },
   cover: {
-    width: '100%',
-    height: 200,
+    ...postCardTokens.cover,
     position: 'absolute',
   },
   blur: {
     flex: 1,
-    minHeight: 160,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
-    paddingVertical: 24,
-    paddingHorizontal: 16,
+    gap: spacing[12],
+    paddingVertical: spacing[24],
+    paddingHorizontal: spacing[16],
   },
-  hint: {
-    color: colors.textPrimary,
-    fontSize: 13,
-    textAlign: 'center',
-    opacity: 0.8,
+  hint: lockedContentOverlayTokens.text,
+  skeletons: {
+    gap: spacing[8],
   },
-  button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: colors.primary,
-    borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 24,
-  },
-  buttonText: {
-    color: colors.textPrimary,
-    fontSize: 14,
-    fontWeight: '600',
+  skeleton: lockedContentOverlayTokens.skeleton,
+  skeletonShort: {
+    width: 164,
+    height: 26,
   },
 });
