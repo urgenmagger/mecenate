@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -15,6 +15,9 @@ import { SkeletonBlock } from "../../common/components/SkeletonBlock";
 import { colors, spacing, radii } from "../../common/theme";
 import { Post } from "../../api/types/api";
 import { useGetPosts } from "../../api/hooks/posts/useGetPosts";
+import { postsService } from "../../api/services/posts.service";
+import { QueryKeys } from "../../api/queryKeys";
+import { useQueryClient } from "@tanstack/react-query";
 import { FeedPostCard } from "./components/FeedPostCard";
 import { PaidPostCard } from "./components/PaidPostCard";
 
@@ -41,6 +44,22 @@ const PostSkeleton = () => (
 
 export const FeedScreen = () => {
   const [activeTab, setActiveTab] = useState("all");
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const tiers: Array<'free' | 'paid'> = ['free', 'paid'];
+    tiers.forEach(tier => {
+      queryClient.prefetchInfiniteQuery({
+        queryKey: [QueryKeys.Posts, tier, 3],
+        queryFn: ({ pageParam }) =>
+          postsService
+            .getFeed({ limit: 3, tier, cursor: pageParam as string | undefined })
+            .then(r => r.data.data),
+        initialPageParam: undefined,
+        staleTime: 5 * 60 * 1000,
+      });
+    });
+  }, [queryClient]);
 
   const tier = activeTab === "all" ? undefined : (activeTab as "free" | "paid");
 
