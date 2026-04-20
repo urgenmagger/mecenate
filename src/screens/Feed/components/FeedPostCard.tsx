@@ -1,5 +1,6 @@
 import { FC, memo } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
 import { Post } from '../../../api/types/api';
 import { useToggleLike } from '../../../api/hooks/posts/useToggleLike';
 import { PostActionChip } from '../../../common/components/PostActionChip';
@@ -23,7 +24,7 @@ const FeedPostCardComponent: FC<FeedPostCardProps> = ({ post }) => {
         <PostAuthor author={post.author} showUsername={false} />
       </View>
       {!!post.coverUrl && (
-        <Image source={{ uri: post.coverUrl }} style={styles.cover} />
+        <Image source={post.coverUrl} style={styles.cover} contentFit="cover" />
       )}
       {!!post.title && <Text style={[styles.title, styles.inner]}>{post.title}</Text>}
       {!!(post.body || post.preview) && (

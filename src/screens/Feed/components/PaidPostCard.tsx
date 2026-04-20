@@ -1,5 +1,6 @@
 import { FC, memo } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
 import { BlurView } from 'expo-blur';
 import { colors, lockedContentOverlayTokens, postCardTokens, spacing, radii } from '../../../common/theme';
 import { Post } from '../../../api/types/api';
@@ -22,7 +23,7 @@ const PaidPostCardComponent: FC<PaidPostCardProps> = ({ post, onDonate }) => {
       </View>
       <View style={styles.imageWrapper}>
         {!!post.coverUrl && (
-          <Image source={{ uri: post.coverUrl }} style={styles.cover} blurRadius={8} />
+          <Image source={post.coverUrl} style={styles.cover} contentFit="cover" blurRadius={8} />
         )}
         <BlurView intensity={40} tint="dark" style={styles.blur}>
           <View style={styles.iconBadge}>
