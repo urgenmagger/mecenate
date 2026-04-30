@@ -1,5 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { NavigationContainer } from '@react-navigation/native';
 import {
   useFonts,
   Manrope_400Regular,
@@ -9,7 +10,7 @@ import {
 } from '@expo-google-fonts/manrope';
 import { QueryProvider } from './src/api/providers/QueryProvider';
 import { StoreProvider } from './src/stores/StoreContext';
-import { FeedScreen } from './src/screens/Feed/FeedScreen';
+import { RootNavigator } from './src/navigation/RootNavigator';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -25,12 +26,14 @@ export default function App() {
 
   return (
     <StoreProvider>
-    <QueryProvider>
-      <SafeAreaProvider>
-        <StatusBar style="light" />
-        <FeedScreen />
-      </SafeAreaProvider>
-    </QueryProvider>
+      <QueryProvider>
+        <SafeAreaProvider>
+          <NavigationContainer>
+            <StatusBar style="light" />
+            <RootNavigator />
+          </NavigationContainer>
+        </SafeAreaProvider>
+      </QueryProvider>
     </StoreProvider>
   );
 }

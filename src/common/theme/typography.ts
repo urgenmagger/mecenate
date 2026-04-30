@@ -8,7 +8,8 @@ export const fontFamily = {
 export const fontSize = {
   xs: 12,
   sm: 13,
-  md: 14,   // TODO: уточнить размер для tab label из Figma
+  md: 14,
+  base: 16,
   lg: 15,
   xl: 18,
 } as const;
@@ -51,6 +52,20 @@ export const textStyles = {
   postBodyLink: {
     fontFamily: fontFamily.medium,
     fontWeight: '500' as const,
+    fontSize: fontSize.lg,
+    lineHeight: lineHeight.md,
+    letterSpacing: 0,
+  },
+  navLabel: {
+    fontFamily: fontFamily.medium,
+    fontWeight: '500' as const,
+    fontSize: fontSize.base,
+    lineHeight: lineHeight.lg,
+    letterSpacing: 0,
+  },
+  bodyText: {
+    fontFamily: fontFamily.regular,
+    fontWeight: '400' as const,
     fontSize: fontSize.lg,
     lineHeight: lineHeight.md,
     letterSpacing: 0,

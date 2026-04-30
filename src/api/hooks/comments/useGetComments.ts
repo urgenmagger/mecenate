@@ -30,6 +30,7 @@ export const useGetComments = (postId: string): ReturnHook => {
   } = useInfiniteQuery<CommentsPage, unknown>({
     queryKey: [QueryKeys.Comments, postId],
     initialPageParam: undefined as string | undefined,
+    staleTime: 30 * 1000,
     queryFn: async ({ pageParam }) => {
       const response = await commentsService.getByPostId(postId, {
         limit: 20,

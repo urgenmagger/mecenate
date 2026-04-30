@@ -10,6 +10,9 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../navigation/types";
 import { SegmentedTabs } from "../../common/components/SegmentedTabs";
 import { SkeletonBlock } from "../../common/components/SkeletonBlock";
 import { colors, spacing, radii } from "../../common/theme";
@@ -45,9 +48,10 @@ const PostSkeleton = () => (
 export const FeedScreen = () => {
   const [activeTab, setActiveTab] = useState("all");
   const queryClient = useQueryClient();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   useEffect(() => {
-    const tiers: Array<'free' | 'paid'> = ['free', 'paid'];
+    const tiers: ('free' | 'paid')[] = ['free', 'paid'];
     tiers.forEach(tier => {
       queryClient.prefetchInfiniteQuery({
         queryKey: [QueryKeys.Posts, tier, 3],
@@ -80,15 +84,18 @@ export const FeedScreen = () => {
   };
 
   const handleDonate = useCallback(() => {}, []);
+  const handlePostPress = useCallback((postId: string) => {
+    navigation.navigate("PostDetail", { postId });
+  }, [navigation]);
 
   const renderPost = useCallback<ListRenderItem<Post>>(
     ({ item }) => {
       if (item.tier === "paid") {
-        return <PaidPostCard post={item} onDonate={handleDonate} />;
+        return <PaidPostCard post={item} onDonate={handleDonate} onPress={handlePostPress} />;
       }
-      return <FeedPostCard post={item} />;
+      return <FeedPostCard post={item} onPress={handlePostPress} />;
     },
-    [handleDonate],
+    [handleDonate, handlePostPress],
   );
 
   const renderFooter = () => {

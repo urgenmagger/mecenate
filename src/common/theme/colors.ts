@@ -1,8 +1,9 @@
 export const colors = {
   brand: {
-    primary: "#6115CD", // active tab bg, CTA
-    primaryText: "#FFFFFF", // text on primary bg
-    like: "#FF2B75", // active like chip bg
+    primary: "#6115CD",
+    primaryDisabled: "#D5C9FF",
+    primaryText: "#FFFFFF",
+    like: "#FF2B75",
   },
   neutral: {
     white: "#FFFFFF",
@@ -11,8 +12,9 @@ export const colors = {
   text: {
     primary: "#FFFFFF",
     secondary: "#57626F",
-    inactive: "#8C8C8C", // TODO: уточнить из Figma (inactive tab label)
-    onLight: "#111416", // TODO: подтвердить из Figma (author name, dark text on light bg)
+    placeholder: "#A4AAB0",
+    inactive: "#8C8C8C",
+    onLight: "#111416",
   },
   background: {
     screen: "#F8F9FB",

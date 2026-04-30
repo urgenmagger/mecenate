@@ -30,4 +30,8 @@ export class PostStore {
       this.comments = [comment, ...this.comments];
     }
   }
+
+  resetComments() {
+    this.comments = [];
+  }
 }

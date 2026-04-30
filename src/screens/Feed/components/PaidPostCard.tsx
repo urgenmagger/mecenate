@@ -1,5 +1,5 @@
 import { FC, memo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { BlurView } from 'expo-blur';
 import { colors, lockedContentOverlayTokens, postCardTokens, spacing, radii } from '../../../common/theme';
@@ -13,11 +13,12 @@ import DonateIcon from '../../../assets/icons/donate.svg';
 interface PaidPostCardProps {
   post: Post;
   onDonate: (postId: string) => void;
+  onPress?: (postId: string) => void;
 }
 
-const PaidPostCardComponent: FC<PaidPostCardProps> = ({ post, onDonate }) => {
+const PaidPostCardComponent: FC<PaidPostCardProps> = ({ post, onDonate, onPress }) => {
   return (
-    <View style={styles.container}>
+    <Pressable style={styles.container} onPress={() => onPress?.(post.id)}>
       <View style={styles.inner}>
         <PostAuthor author={post.author} showUsername={false} />
       </View>
@@ -37,7 +38,7 @@ const PaidPostCardComponent: FC<PaidPostCardProps> = ({ post, onDonate }) => {
         <SkeletonBlock style={[styles.skeleton, styles.skeletonShort]} />
         <SkeletonBlock style={styles.skeleton} />
       </View>
-    </View>
+    </Pressable>
   );
 };
 
