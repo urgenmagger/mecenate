@@ -8,6 +8,7 @@ import {
   Manrope_700Bold,
 } from '@expo-google-fonts/manrope';
 import { QueryProvider } from './src/api/providers/QueryProvider';
+import { StoreProvider } from './src/stores/StoreContext';
 import { FeedScreen } from './src/screens/Feed/FeedScreen';
 
 export default function App() {
@@ -23,11 +24,13 @@ export default function App() {
   }
 
   return (
+    <StoreProvider>
     <QueryProvider>
       <SafeAreaProvider>
         <StatusBar style="light" />
         <FeedScreen />
       </SafeAreaProvider>
     </QueryProvider>
+    </StoreProvider>
   );
 }
