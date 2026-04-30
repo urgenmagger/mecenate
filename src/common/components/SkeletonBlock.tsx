@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
+import { DimensionValue, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { colors } from '../theme';
 
 interface SkeletonBlockProps {
@@ -17,7 +17,7 @@ export const SkeletonBlock: FC<SkeletonBlockProps> = ({
 }) => {
   return (
     <View
-      style={[styles.block, { width: width as any, height, borderRadius }, style]}
+      style={[styles.block, { width: width as DimensionValue, height, borderRadius }, style]}
     />
   );
 };
